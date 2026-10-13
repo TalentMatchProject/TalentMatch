@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block title %}Iniciar sesión | Talent Match{% endblock %}
+
+{% block content %}
+    <h1>Iniciar sesión</h1>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <input type="hidden" name="next" value="{{ next }}">
+        <button class="btn" type="submit">Entrar</button>
+    </form>
+    <p>¿No tienes cuenta? <a href="{% url 'accounts:register' %}">Regístrate</a></p>
+{% endblock %}

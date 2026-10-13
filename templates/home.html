@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h1>Talent Match</h1>
+    <p>Plataforma para descubrir talento y gestionar el proceso de selección.</p>
+    {% if user.is_authenticated %}
+        <p>Has iniciado sesión como {{ user.get_role_display }}.</p>
+    {% else %}
+        <p><a href="{% url 'accounts:register' %}">Crea tu cuenta</a> o <a href="{% url 'accounts:login' %}">inicia sesión</a> para empezar.</p>
+    {% endif %}
+{% endblock %}

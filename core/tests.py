@@ -1,7 +1,9 @@
-from django.test import TestCase
-from django.db import IntegrityError
 
-from .models import Organization, OrganizationKind
+from django.test import TestCase
+from django.db import IntegrityError, transaction
+
+from organizations.models import Organization, OrganizationKind
+from .models import Skill
 
 
 class OrganizationModelTests(TestCase):
@@ -22,3 +24,20 @@ class OrganizationModelTests(TestCase):
         Organization.objects.create(name="Acme", slug="acme")
         with self.assertRaises(IntegrityError):
             Organization.objects.create(name="Otra", slug="acme")
+
+
+class SkillModelTests(TestCase):
+    def test_str_returns_name(self):
+        skill = Skill.objects.create(name="Python")
+        self.assertEqual(str(skill), "Python")
+
+    def test_slug_is_generated_automatically(self):
+        skill = Skill.objects.create(name="Machine Learning")
+        self.assertEqual(skill.slug, "machine-learning")
+
+    def test_name_must_be_unique(self):
+        Skill.objects.create(name="Python")
+
+        with self.assertRaises(IntegrityError):
+            with transaction.atomic():
+                Skill.objects.create(name="Python")

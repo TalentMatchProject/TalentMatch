@@ -27,6 +27,19 @@ class OrganizationModelTests(TestCase):
 
 
 class SkillModelTests(TestCase):
+    def test_is_active_defaults_to_true(self):
+    skill = Skill.objects.create(name="Django")
+    self.assertTrue(skill.is_active)
+
+def test_slug_must_be_unique(self):
+    Skill.objects.create(name="Python", slug="python")
+
+    with self.assertRaises(IntegrityError):
+        with transaction.atomic():
+            Skill.objects.create(
+                name="Python avanzado",
+                slug="python",
+            )
     def test_str_returns_name(self):
         skill = Skill.objects.create(name="Python")
         self.assertEqual(str(skill), "Python")

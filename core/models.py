@@ -16,10 +16,13 @@ class Skill(models.Model):
     description = models.TextField(
         blank=True,
     )
+    is_active = models.BooleanField(
+    default=True,
+    )
     created_at = models.DateTimeField(
         auto_now_add=True,
     )
-
+    
     class Meta:
         ordering = ["name"]
         verbose_name = "Skill"

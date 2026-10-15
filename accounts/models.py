@@ -29,8 +29,11 @@ class User(AbstractUser):
         ],
     )
     city = models.CharField("ciudad", max_length=100, blank=True)
+    professional_title = models.CharField("perfil profesional", max_length=100,blank=True)
     bio = models.TextField("biografía", blank=True)
     avatar = models.ImageField("avatar", upload_to="avatars/", blank=True, null=True)
 
     def __str__(self):
         return self.username
+
+    

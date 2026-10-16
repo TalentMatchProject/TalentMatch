@@ -1,6 +1,8 @@
 from django.db import models
 from django.conf import settings
 from django.db import models
+from django.conf import settings
+from django.db import models
 
 
 class OrganizationKind(models.TextChoices):
@@ -57,3 +59,5 @@ class Membership(models.Model):
 
     def __str__(self):
         return f"{self.user} en {self.organization} ({self.get_role_display()})"
+
+

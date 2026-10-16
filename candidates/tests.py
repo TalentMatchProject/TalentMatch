@@ -2,8 +2,8 @@ from django.test import TestCase
 from django.contrib.auth import get_user_model
 from django.db import IntegrityError
 from django.db.models import ProtectedError
-from .models import Candidate, CandidateSkill
-from organizations.models import Skill  # Importamos la skill de tus compañeros
+from core.models import Skill
+from .models import Candidate, CandidateSkill, CandidateSkillSource
 
 User = get_user_model()
 
@@ -49,24 +49,24 @@ class CandidateSkillTestCase(TestCase):
             candidate=self.candidate,
             skill=self.skill,
             evidence="Desarrollo del Backend de la plataforma",
-            source=CandidateSkill.SourceChoices.PROYECTO
+            source=CandidateSkillSource.PROJECT
         )
         self.assertEqual(candidate_skill.skill.name, "Python")
-        self.assertEqual(candidate_skill.source, "proyecto")
+        self.assertEqual(candidate_skill.source, "project")
 
     def test_candidate_skill_uniqueness(self):
         CandidateSkill.objects.create(
             candidate=self.candidate,
             skill=self.skill,
             evidence="Primera evidencia",
-            source=CandidateSkill.SourceChoices.CV
+            source=CandidateSkillSource.CV
         )
         with self.assertRaises(IntegrityError):
             CandidateSkill.objects.create(
                 candidate=self.candidate,
                 skill=self.skill,
                 evidence="Segunda evidencia del mismo skill",
-                source=CandidateSkill.SourceChoices.ENTREVISTA
+                source=CandidateSkillSource.INTERVIEW
             )
 
     def test_candidate_skill_protected_error(self):
@@ -74,7 +74,7 @@ class CandidateSkillTestCase(TestCase):
             candidate=self.candidate,
             skill=self.skill,
             evidence="Evidencia para proteger",
-            source=CandidateSkill.SourceChoices.CERTIFICACION
+            source=CandidateSkillSource.CERTIFICATION
         )
         with self.assertRaises(ProtectedError):
             self.skill.delete()

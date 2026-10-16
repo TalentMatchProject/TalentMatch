@@ -53,3 +53,6 @@ class Offer(models.Model):
     def __str__(self):
         return self.title
 
+class OfferSkillRequirement(models.TextChoices):
+    MUST_HAVE = "must_have", "Obligatoria"
+    DESIRABLE = "desirable", "Deseable"

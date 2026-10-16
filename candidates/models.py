@@ -2,20 +2,31 @@ from django.db import models
 from django.conf import settings
 
 class Candidate(models.Model):
-    # Relación uno a uno con el usuario. Si se borra el usuario, se borra su perfil de candidato (CASCADE)
-    # related_name='candidate_profile' cumple con el requisito del test inverso
-    user = models.OneToOneField(
-        settings.AUTH_USER_MODEL, 
-        on_delete=models.CASCADE, 
-        related_name='candidate_profile'
-    )
-    
-    # Campos de texto libres para disponibilidad e intereses
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='candidate_profile')
     availability = models.TextField(blank=True, null=True)
     interests = models.TextField(blank=True, null=True)
-    
-    # Campo booleano para permitir contacto (por defecto Verdadero o Falso según prefiráis)
     allows_contact = models.BooleanField(default=True)
 
     def __str__(self):
         return f"Perfil de {self.user.username}"
+
+class CandidateSkill(models.Model):
+    class SourceChoices(models.TextChoices):
+        CV = 'CV', 'CV'
+        PROYECTO = 'proyecto', 'Proyecto'
+        CERTIFICACION = 'certificacion', 'Certificación'
+        ENTREVISTA = 'entrevista', 'Entrevista'
+
+    candidate = models.ForeignKey(Candidate, on_delete=models.CASCADE, related_name='candidate_skills')
+    # Ponemos la relación como texto. Django la buscará automáticamente cuando se fusione la otra tarea
+    skill = models.ForeignKey('organizations.Skill', on_delete=models.PROTECT, related_name='candidate_skills')
+    
+    evidence = models.TextField()
+    source = models.CharField(max_length=20, choices=SourceChoices.choices, default=SourceChoices.CV)
+
+    class Meta:
+        unique_together = ('candidate', 'skill')
+
+    def __str__(self):
+        return f"Competencia de {self.candidate.user.username}"
+

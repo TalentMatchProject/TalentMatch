@@ -57,3 +57,11 @@ class Membership(models.Model):
 
     def __str__(self):
         return f"{self.user} en {self.organization} ({self.get_role_display()})"
+
+
+# Añade esto al final de organizations/models.py
+class Skill(models.Model):
+    name = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.name

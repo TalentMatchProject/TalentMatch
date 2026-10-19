@@ -183,3 +183,115 @@ class TaskOwnershipTests(TestCase):
             self.task2.status,
             Task.Status.PENDING,
         )
+
+    
+class TaskOverdueAndCompletionTests(TestCase):
+    def setUp(self):
+        self.user = get_user_model().objects.create_user(
+            username="hu11user",
+            email="hu11@example.com",
+            password="TestPassword123!",
+        )
+        self.client.login(
+            username="hu11user",
+            password="TestPassword123!",
+        )
+        self.task = Task.objects.create(
+            owner=self.user,
+            title="Tarea HU11",
+            status=Task.Status.PENDING,
+            due_date=timezone.now() - timedelta(hours=1),
+        )
+
+    def test_task_is_overdue_when_past_due_and_not_completed(self):
+        self.assertTrue(self.task.is_overdue)
+
+    def test_task_is_not_overdue_when_due_date_is_future(self):
+        self.task.due_date = timezone.now() + timedelta(days=1)
+        self.assertFalse(self.task.is_overdue)
+
+    def test_completed_task_is_not_overdue(self):
+        self.task.status = Task.Status.COMPLETED
+        self.task.completed_at = timezone.now()
+        self.task.save()
+
+        self.assertFalse(self.task.is_overdue)
+
+    def test_overdue_task_is_highlighted_in_list(self):
+        response = self.client.get(reverse("recruitment:task_list"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'class="task-overdue"')
+        self.assertContains(response, "Tarea vencida")
+
+    def test_completing_task_sets_completed_at(self):
+        response = self.client.post(
+            reverse("recruitment:task_complete", args=[self.task.pk])
+        )
+
+        self.assertEqual(response.status_code, 302)
+        self.task.refresh_from_db()
+        self.assertEqual(self.task.status, Task.Status.COMPLETED)
+        self.assertIsNotNone(self.task.completed_at)
+
+    def test_reopening_task_clears_completed_at(self):
+        self.task.status = Task.Status.COMPLETED
+        self.task.completed_at = timezone.now()
+        self.task.save()
+
+        response = self.client.post(
+            reverse("recruitment:task_reopen", args=[self.task.pk])
+        )
+
+        self.assertEqual(response.status_code, 302)
+        self.task.refresh_from_db()
+        self.assertEqual(self.task.status, Task.Status.PENDING)
+        self.assertIsNone(self.task.completed_at)
+
+    def test_editing_task_to_completed_sets_completed_at(self):
+        due_date = timezone.localtime(
+            self.task.due_date
+        ).strftime("%Y-%m-%dT%H:%M")
+
+        response = self.client.post(
+            reverse("recruitment:task_update", args=[self.task.pk]),
+            {
+                "title": self.task.title,
+                "description": "",
+                "task_type": self.task.task_type,
+                "priority": self.task.priority,
+                "status": Task.Status.COMPLETED,
+                "due_date": due_date,
+            },
+        )
+
+        self.assertEqual(response.status_code, 302)
+        self.task.refresh_from_db()
+        self.assertEqual(self.task.status, Task.Status.COMPLETED)
+        self.assertIsNotNone(self.task.completed_at)
+
+    def test_editing_completed_task_to_pending_clears_completed_at(self):
+        self.task.status = Task.Status.COMPLETED
+        self.task.completed_at = timezone.now()
+        self.task.save()
+
+        due_date = timezone.localtime(
+            self.task.due_date
+        ).strftime("%Y-%m-%dT%H:%M")
+
+        response = self.client.post(
+            reverse("recruitment:task_update", args=[self.task.pk]),
+            {
+                "title": self.task.title,
+                "description": "",
+                "task_type": self.task.task_type,
+                "priority": self.task.priority,
+                "status": Task.Status.PENDING,
+                "due_date": due_date,
+            },
+        )
+
+        self.assertEqual(response.status_code, 302)
+        self.task.refresh_from_db()
+        self.assertEqual(self.task.status, Task.Status.PENDING)
+        self.assertIsNone(self.task.completed_at)

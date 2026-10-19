@@ -1,6 +1,7 @@
 
 from django.conf import settings
 from django.db import models
+from django.utils import timezone
 
 
 class Task(models.Model):
@@ -59,6 +60,13 @@ class Task(models.Model):
         null=True,
         blank=True,
     )
+
+    @property
+    def is_overdue(self):
+        return (
+            self.status != self.Status.COMPLETED
+            and self.due_date < timezone.now()
+        )
 
     def __str__(self):
         return self.title

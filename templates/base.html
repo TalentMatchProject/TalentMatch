@@ -1,10 +1,13 @@
+
 <!DOCTYPE html>
 <html lang="es">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+
     <title>{% block title %}Talent Match{% endblock %}</title>
+
     <style>
         body {
             font-family: system-ui, sans-serif;
@@ -103,40 +106,109 @@
             font-size: 0.8em;
             color: #6b7280;
         }
+
+        /* Tarjetas del listado de tareas */
+        .task-card,
+        .task-overdue {
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+        }
+
+        .task-card {
+            border: 1px solid #e5e7eb;
+            background: #fff;
+        }
+
+        /* Estilo destacado para tareas vencidas */
+        .task-overdue {
+            border: 2px solid #b91c1c;
+            background: #fef2f2;
+        }
+
+        .task-overdue h3 {
+            color: #b91c1c;
+        }
+
+        .overdue-label {
+            display: inline-block;
+            color: #b91c1c;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        /* Formularios de acciones dentro de las tarjetas */
+        .task-card form,
+        .task-overdue form {
+            margin-top: 12px;
+        }
+
+        button {
+            cursor: pointer;
+        }
     </style>
 </head>
 
 <body>
+
     <nav>
-        <a class="brand" href="{% url 'core:home' %}">Talent Match</a>
+        <a class="brand" href="{% url 'core:home' %}">
+            Talent Match
+        </a>
+
         {% if user.is_authenticated %}
-        {% if user.avatar %}
-        <img class="avatar" src="{{ user.avatar.url }}" alt="Avatar">
-        {% endif %}
 
-        <span>Hola, {{ user.first_name|default:user.username }}</span>
+            {% if user.avatar %}
+                <img
+                    class="avatar"
+                    src="{{ user.avatar.url }}"
+                    alt="Avatar"
+                >
+            {% endif %}
 
-        <a href="{% url 'recruitment:task_list' %}">Mis tareas</a>
+            <span>
+                Hola, {{ user.first_name|default:user.username }}
+            </span>
 
-        <a href="{% url 'accounts:profile_edit' %}">Mi perfil</a>
+            <a href="{% url 'recruitment:task_list' %}">
+                Mis tareas
+            </a>
 
-        <form method="post" action="{% url 'accounts:logout' %}">
-            {% csrf_token %}
-            <button type="submit">Cerrar sesión</button>
-        </form>
+            <a href="{% url 'accounts:profile_edit' %}">
+                Mi perfil
+            </a>
+
+            <form method="post" action="{% url 'accounts:logout' %}">
+                {% csrf_token %}
+                <button type="submit">Cerrar sesión</button>
+            </form>
+
         {% else %}
-        <a href="{% url 'accounts:login' %}">Iniciar sesión</a>
-        <a href="{% url 'accounts:register' %}">Registrarse</a>
+
+            <a href="{% url 'accounts:login' %}">
+                Iniciar sesión
+            </a>
+
+            <a href="{% url 'accounts:register' %}">
+                Registrarse
+            </a>
+
         {% endif %}
     </nav>
-    <main>
-        {% if messages %}
-        <ul class="messages">
-            {% for message in messages %}<li>{{ message }}</li>{% endfor %}
-        </ul>
-        {% endif %}
-        {% block content %}{% endblock %}
-    </main>
-</body>
 
+    <main>
+
+        {% if messages %}
+            <ul class="messages">
+                {% for message in messages %}
+                    <li>{{ message }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+
+        {% block content %}{% endblock %}
+
+    </main>
+
+</body>
 </html>

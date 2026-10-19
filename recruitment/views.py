@@ -1,3 +1,4 @@
+
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
@@ -57,6 +58,14 @@ def task_create(request):
         if form.is_valid():
             task = form.save(commit=False)
             task.owner = request.user
+
+            # Una tarea nueva no puede tener fecha de finalización
+            # si no se crea directamente como completada.
+            if task.status == Task.Status.COMPLETED:
+                task.completed_at = timezone.now()
+            else:
+                task.completed_at = None
+
             task.save()
 
             messages.success(
@@ -101,7 +110,19 @@ def task_update(request, pk):
         form = TaskForm(request.POST, instance=task)
 
         if form.is_valid():
-            task = form.save()
+            previous_status = task.status
+            task = form.save(commit=False)
+
+            if task.status == Task.Status.COMPLETED:
+                if (
+                    previous_status != Task.Status.COMPLETED
+                    or task.completed_at is None
+                ):
+                    task.completed_at = timezone.now()
+            else:
+                task.completed_at = None
+
+            task.save()
 
             messages.success(
                 request,
@@ -156,13 +177,38 @@ def task_complete(request, pk):
         owner=request.user,
     )
 
-    task.status = Task.Status.COMPLETED
-    task.completed_at = timezone.now()
-    task.save(update_fields=["status", "completed_at"])
+    if (
+        task.status != Task.Status.COMPLETED
+        or task.completed_at is None
+    ):
+        task.status = Task.Status.COMPLETED
+        task.completed_at = timezone.now()
+        task.save(update_fields=["status", "completed_at"])
 
     messages.success(
         request,
         f'La tarea "{task.title}" se ha marcado como completada.',
+    )
+
+    return redirect("recruitment:task_list")
+
+
+@login_required
+@require_POST
+def task_reopen(request, pk):
+    task = get_object_or_404(
+        Task,
+        pk=pk,
+        owner=request.user,
+    )
+
+    task.status = Task.Status.PENDING
+    task.completed_at = None
+    task.save(update_fields=["status", "completed_at"])
+
+    messages.success(
+        request,
+        f'La tarea "{task.title}" se ha reabierto correctamente.',
     )
 
     return redirect("recruitment:task_list")

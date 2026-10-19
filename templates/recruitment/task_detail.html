@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block title %}
+{{ task.title }} - Talent Match
+{% endblock %}
+
+{% block content %}
+
+<h1>{{ task.title }}</h1>
+
+<p>
+    <strong>Descripción:</strong><br>
+    {{ task.description|default:"Sin descripción." }}
+</p>
+
+<p>
+    <strong>Tipo:</strong>
+    {{ task.get_task_type_display }}
+</p>
+
+<p>
+    <strong>Prioridad:</strong>
+    {{ task.get_priority_display }}
+</p>
+
+<p>
+    <strong>Estado:</strong>
+    {{ task.get_status_display }}
+</p>
+
+<p>
+    <strong>Fecha límite:</strong>
+    {{ task.due_date|date:"d/m/Y H:i" }}
+</p>
+
+<p>
+    <strong>Creada:</strong>
+    {{ task.created_at|date:"d/m/Y H:i" }}
+</p>
+
+{% if task.completed_at %}
+<p>
+    <strong>Completada:</strong>
+    {{ task.completed_at|date:"d/m/Y H:i" }}
+</p>
+{% endif %}
+
+<p>
+    <a href="{% url 'recruitment:task_update' task.pk %}">
+        Editar
+    </a>
+</p>
+
+<p>
+    <a href="{% url 'recruitment:task_delete' task.pk %}">
+        Eliminar
+    </a>
+</p>
+
+<p>
+    <a href="{% url 'recruitment:task_list' %}">
+        Volver
+    </a>
+</p>
+
+{% endblock %}

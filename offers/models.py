@@ -56,3 +56,19 @@ class Offer(models.Model):
 class OfferSkillRequirement(models.TextChoices):
     MUST_HAVE = "must_have", "Obligatoria"
     DESIRABLE = "desirable", "Deseable"
+
+
+class OfferSkill(models.Model):
+    offer = models.ForeignKey(Offer, on_delete=models.CASCADE, related_name='offer_skills')
+    skill = models.ForeignKey('organizations.Skill', on_delete=models.PROTECT, related_name='offer_skills')
+    requirement = models.CharField(
+        max_length=20, 
+        choices=OfferSkillRequirement.choices, 
+        default=OfferSkillRequirement.MUST_HAVE
+    )
+
+    class Meta:
+        unique_together = ('offer', 'skill')
+
+    def __str__(self):
+        return f"{self.skill.name} ({self.get_requirement_display()}) - {self.offer.title}"

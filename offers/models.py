@@ -53,3 +53,31 @@ class Offer(models.Model):
     def __str__(self):
         return self.title
 
+
+
+
+class OfferSkill(models.Model):
+    # Opciones para el tipo de requerimiento
+    class RequirementChoices(models.TextChoices):
+        IMPRESCINDIBLE = 'imprescindible', 'Imprescindible'
+        DESEABLE = 'deseable', 'Deseable'
+
+    # Relaciones obligatorias
+    offer = models.ForeignKey(Offer, on_delete=models.CASCADE, related_name='offer_skills')
+    # Relación con el modelo Skill de tus compañeros (con PROTECT)
+    skill = models.ForeignKey('organizations.Skill', on_delete=models.PROTECT, related_name='offer_skills')
+    
+    # Campo para definir si es imprescindible o deseable
+    requirement = models.CharField(
+        max_length=20, 
+        choices=RequirementChoices.choices, 
+        default=RequirementChoices.IMPRESCINDIBLE
+    )
+
+    class Meta:
+        # Una oferta no repite la misma skill (restricción de unicidad)
+        unique_together = ('offer', 'skill')
+
+    def __str__(self):
+        return f"{self.skill.name} ({self.get_requirement_display()}) - {self.offer.title}"
+

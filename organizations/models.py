@@ -1,6 +1,5 @@
 from django.db import models
 from django.conf import settings
-from django.db import models
 
 
 class OrganizationKind(models.TextChoices):
@@ -57,3 +56,13 @@ class Membership(models.Model):
 
     def __str__(self):
         return f"{self.user} en {self.organization} ({self.get_role_display()})"
+
+
+
+class Skill(models.Model):
+    name = models.CharField(max_length=255)
+    slug = models.SlugField(unique=True, null=True, blank=True)
+    is_active = models.BooleanField(default=True)
+
+    def __str__(self):
+        return self.name

@@ -61,3 +61,13 @@ class Membership(models.Model):
         return f"{self.user} en {self.organization} ({self.get_role_display()})"
 
 
+# Añade esto al final de organizations/models.py para desbloquear la API
+
+
+class Skill(models.Model):
+    name = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.name
+
+

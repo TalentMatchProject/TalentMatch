@@ -22,6 +22,7 @@ INSTALLED_APPS = [
     "organizations",
     "candidates",
     "recruitment",
+    "rest_framework"
 ]
 
 MIDDLEWARE = [

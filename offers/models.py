@@ -2,6 +2,7 @@ from django.db import models
 from django.conf import settings
 from django.core.validators import MinValueValidator
 from decimal import Decimal
+from django.utils.text import slugify
 
 # Opciones de modalidad
 class ModalityChoices(models.TextChoices):
@@ -50,9 +51,59 @@ class Offer(models.Model):
             models.Index(fields=['created_at']),
         ]
 
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            base = slugify(self.title) or "oferta"
+            slug, n = base, 2
+            while Offer.objects.filter(slug=slug).exclude(pk=self.pk).exists():
+                slug = f"{base}-{n}"
+                n += 1
+            self.slug = slug
+        super().save(*args, **kwargs)
+
     def __str__(self):
         return self.title
 
 class OfferSkillRequirement(models.TextChoices):
     MUST_HAVE = "must_have", "Obligatoria"
     DESIRABLE = "desirable", "Deseable"
+
+class OfferSkill(models.Model):
+    offer = models.ForeignKey(Offer, on_delete=models.CASCADE, related_name='offer_skills')
+    skill = models.ForeignKey('core.Skill', on_delete=models.PROTECT, related_name='offer_skills')
+    requirement = models.CharField(
+        max_length=20, 
+        choices=OfferSkillRequirement.choices, 
+        default=OfferSkillRequirement.MUST_HAVE
+    )
+
+    class Meta:
+        unique_together = ('offer', 'skill')
+
+    def __str__(self):
+        return f"{self.skill.name} - {self.offer.title}"
+
+class SavedOffer(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="saved_offers",
+    )
+    offer = models.ForeignKey(
+        Offer,
+        on_delete=models.CASCADE,
+        related_name="saved_by",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["user", "offer"],
+                name="unique_saved_offer",
+            ),
+        ]
+
+    def __str__(self):
+        return f"{self.user} guarda {self.offer}"

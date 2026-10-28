@@ -1,7 +1,7 @@
 from django.test import TestCase
 from django.contrib.auth import get_user_model
 from .models import Offer, StatusChoices
-from organizations.models import Organization 
+from organizations.models import Organization
 
 User = get_user_model()
 
@@ -36,3 +36,16 @@ class OfferModelTestCase(TestCase):
         )
         # Verifica que la oferta figure en la lista interna de la organización
         self.assertIn(offer, self.org.offers.all())
+
+    def test_slug_is_generated_and_unique(self):
+        first = Offer.objects.create(
+            organization=self.org, title="Data Analyst", description="d", location="l"
+        )
+        second = Offer.objects.create(
+            organization=self.org, title="Data Analyst", description="d", location="l"
+        )
+        self.assertEqual(first.slug, "data-analyst")
+        self.assertEqual(second.slug, "data-analyst-2")
+
+
+

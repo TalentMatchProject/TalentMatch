@@ -22,7 +22,10 @@ INSTALLED_APPS = [
     "organizations",
     "candidates",
     "recruitment",
-    "rest_framework"
+    "rest_framework",
+    "django_filters",
+    "drf_spectacular",
+    "api",
 ]
 
 MIDDLEWARE = [
@@ -90,4 +93,24 @@ LOGGING = {
         "handlers": ["console"],
         "level": "INFO",
     },
+}
+
+REST_FRAMEWORK = {
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.IsAuthenticatedOrReadOnly",
+    ],
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
+    "PAGE_SIZE": 12,
+    "DEFAULT_FILTER_BACKENDS": [
+        "django_filters.rest_framework.DjangoFilterBackend",
+        "rest_framework.filters.SearchFilter",
+        "rest_framework.filters.OrderingFilter",
+    ],
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+}
+
+SPECTACULAR_SETTINGS = {
+    "TITLE": "Talent Match API",
+    "DESCRIPTION": "API REST de la plataforma Talent Match.",
+    "VERSION": "1.0.0",
 }

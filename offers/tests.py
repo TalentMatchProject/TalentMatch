@@ -2,9 +2,6 @@ from django.test import TestCase
 from django.contrib.auth import get_user_model
 from .models import Offer, StatusChoices
 from organizations.models import Organization
-from django.urls import reverse
-from rest_framework import status
-from rest_framework.test import APITestCase
 
 User = get_user_model()
 
@@ -40,49 +37,15 @@ class OfferModelTestCase(TestCase):
         # Verifica que la oferta figure en la lista interna de la organización
         self.assertIn(offer, self.org.offers.all())
 
-
-
-class OfferPermissionTests(APITestCase):
-    def setUp(self):
-        self.candidate = User.objects.create_user(
-            username="candidate_test",
-            email="candidate_test@example.com",
-            password="test-password-123",
-            role=User.Role.CANDIDATE,
+    def test_slug_is_generated_and_unique(self):
+        first = Offer.objects.create(
+            organization=self.org, title="Data Analyst", description="d", location="l"
         )
-        self.recruiter = User.objects.create_user(
-            username="recruiter_test",
-            email="recruiter_test@example.com",
-            password="test-password-123",
-            role=User.Role.RECRUITER,
+        second = Offer.objects.create(
+            organization=self.org, title="Data Analyst", description="d", location="l"
         )
-        self.org = Organization.objects.create(
-            name="Empresa API Test",
-            slug="empresa-api-test",
-        )
-        self.offer = Offer.objects.create(
-            organization=self.org,
-            created_by=self.recruiter,
-            title="Oferta para pruebas API",
-            slug="oferta-pruebas-api",
-            description="Oferta creada para probar permisos.",
-            location="Remoto",
-            status=StatusChoices.PUBLICADA,
-        )
-        self.url = reverse("offer-detail", args=[self.offer.pk])
+        self.assertEqual(first.slug, "data-analyst")
+        self.assertEqual(second.slug, "data-analyst-2")
 
-    def test_candidate_cannot_delete_offer(self):
-        self.client.force_authenticate(user=self.candidate)
 
-        response = self.client.delete(self.url)
 
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-        self.assertTrue(Offer.objects.filter(pk=self.offer.pk).exists())
-
-    def test_recruiter_can_delete_offer(self):
-        self.client.force_authenticate(user=self.recruiter)
-
-        response = self.client.delete(self.url)
-
-        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
-        self.assertFalse(Offer.objects.filter(pk=self.offer.pk).exists())

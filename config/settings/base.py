@@ -1,4 +1,5 @@
 import os
+import sys
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -27,6 +28,7 @@ INSTALLED_APPS = [
     "drf_spectacular",
     "api",
     "chat",
+    "notifications",
 ]
 
 MIDDLEWARE = [
@@ -115,3 +117,10 @@ SPECTACULAR_SETTINGS = {
     "DESCRIPTION": "API REST de la plataforma Talent Match.",
     "VERSION": "1.0.0",
 }
+
+CELERY_BROKER_URL = os.getenv("REDIS_URL", "redis://localhost:6379/0")
+CELERY_ACCEPT_CONTENT = ["json"]
+CELERY_TASK_SERIALIZER = "json"
+CELERY_TIMEZONE = TIME_ZONE
+CELERY_TASK_ALWAYS_EAGER = "test" in sys.argv
+CELERY_TASK_EAGER_PROPAGATES = True
